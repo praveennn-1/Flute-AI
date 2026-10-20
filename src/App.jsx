@@ -15,7 +15,6 @@ import {
   X,
   AlertCircle
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 // Dictionary of proper technical nouns & acronyms (inspired by Wispr Flow's dictionary system)
 const JARGON_MAP = {
@@ -69,7 +68,6 @@ export default function App() {
   const [interimTranscript, setInterimTranscript] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [isPolishing, setIsPolishing] = useState(false);
   const [autoPunctuate, setAutoPunctuate] = useState(ENV_AUTO_PUNCTUATE);
   const [removeFillers, setRemoveFillers] = useState(ENV_REMOVE_FILLERS);
   const [whisperBoost, setWhisperBoost] = useState(ENV_WHISPER_BOOST);
@@ -469,59 +467,6 @@ export default function App() {
     };
   }, []);
 
-  // Polish with AI (LLM if configured, else instant rule-based polish)
-  const polishWithAI = async () => {
-    const fullText = (transcript + (interimTranscript ? ' ' + interimTranscript : '')).trim();
-    if (!fullText) return;
-
-    if (!GROQ_KEY && !OPENAI_KEY) {
-      const cleaned = formatText(fullText, true);
-      setTranscript(cleaned);
-      setInterimTranscript('');
-      return;
-    }
-
-    setIsPolishing(true);
-    try {
-      const isGroq = Boolean(GROQ_KEY);
-      const endpoint = isGroq
-        ? 'https://api.groq.com/openai/v1/chat/completions'
-        : 'https://api.openai.com/v1/chat/completions';
-      const authHeader = `Bearer ${isGroq ? GROQ_KEY : OPENAI_KEY}`;
-      const model = isGroq ? LLM_MODEL : 'gpt-4o-mini';
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authHeader,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are an executive voice typing engine. Clean up conversational disfluencies (um, uh, like), add proper punctuation and capitalization, and format technical terms properly. Do not add conversational commentary or quotes. Return ONLY the polished final text.',
-            },
-            { role: 'user', content: fullText },
-          ],
-          temperature: 0.1,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.choices && data.choices[0]?.message?.content) {
-        setTranscript(data.choices[0].message.content.trim());
-        setInterimTranscript('');
-      }
-    } catch (err) {
-      console.warn('AI polishing fallback:', err);
-    } finally {
-      setIsPolishing(false);
-    }
-  };
-
   // Robust clipboard copy with fallback for mobile browsers
   const copyToClipboard = async () => {
     const fullText = (transcript + (interimTranscript ? ' ' + interimTranscript : '')).trim();
@@ -556,14 +501,6 @@ export default function App() {
 
     if (success) {
       setCopied(true);
-      try {
-        confetti({
-          particleCount: 40,
-          spread: 45,
-          origin: { y: 0.7 },
-          colors: ['#181715', '#4A4740', '#7E7A70']
-        });
-      } catch (e) {}
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -858,22 +795,12 @@ export default function App() {
                   <span className="text-[11px] font-mono text-[#7E7A70] px-2 py-0.5 rounded bg-[#F8F7F4] border border-[#E5E2DA]">{audioLevel}%</span>
                 </div>
 
-                {/* Actions: AI Polish, Copy, Clear */}
-                <div className="grid grid-cols-3 sm:flex items-center gap-2">
-                  <button
-                    onClick={polishWithAI}
-                    disabled={(!transcript && !interimTranscript) || isPolishing}
-                    className="px-2.5 sm:px-4 py-2 rounded-full border border-[#E5E2DA] hover:border-[#181715] text-[11px] sm:text-xs font-mono uppercase tracking-wider text-[#181715] transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
-                    title="Deep AI formatting and filler cleanup"
-                  >
-                    <Sparkles className={`w-3.5 h-3.5 flex-shrink-0 ${isPolishing ? 'animate-spin text-amber-600' : 'text-amber-500'}`} />
-                    <span>{isPolishing ? 'POLISH...' : 'AI POLISH'}</span>
-                  </button>
-
+                {/* Actions: Copy, Clear */}
+                <div className="flex items-center gap-2">
                   <button
                     onClick={copyToClipboard}
                     disabled={!transcript && !interimTranscript}
-                    className="px-2.5 sm:px-4 py-2 rounded-full border border-[#E5E2DA] hover:border-[#181715] text-[11px] sm:text-xs font-mono uppercase tracking-wider text-[#181715] transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
+                    className="px-3 sm:px-4 py-2 rounded-full border border-[#E5E2DA] hover:border-[#181715] text-[11px] sm:text-xs font-mono uppercase tracking-wider text-[#181715] transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" /> : <Copy className="w-3.5 h-3.5 flex-shrink-0" />}
                     <span>{copied ? 'COPIED' : 'COPY'}</span>
