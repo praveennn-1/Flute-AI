@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F8F7F4;
+    color: #181715;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}
+
+/* Editorial typography utilities */
+.nav-link {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: 0.15em;
+  font-size: 0.825rem;
+  text-transform: uppercase;
+  color: #4A4740;
+  transition: color 0.2s ease;
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.nav-link:hover {
+  color: #181715;
+}
+
+.nav-link.active {
+  color: #181715;
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #181715;
+}
+
+.editorial-italic {
+  font-style: italic;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 400;
+}
+
+/* Clean border styling */
+.border-subtle {
+  border-color: #E5E2DA;
+}
+
+.card-editorial {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E2DA;
+  transition: all 0.25s ease;
+}
+
+.card-editorial:hover {
+  border-color: #181715;
+  box-shadow: 0 10px 30px -10px rgba(24, 23, 21, 0.08);
+}
