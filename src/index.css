@@ -3,15 +3,30 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
   body {
     background-color: #F8F7F4;
     color: #181715;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, .font-serif {
     font-family: 'Playfair Display', Georgia, serif;
   }
+}
+
+/* Hide scrollbar for clean horizontal scrolling pills on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Editorial typography utilities */
